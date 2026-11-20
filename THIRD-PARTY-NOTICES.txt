@@ -1,0 +1,58 @@
+VRCTTS — THIRD-PARTY NOTICES
+
+NAudio.Core and NAudio.Wasapi 3.3.0
+https://github.com/naudio/NAudio
+MIT License, reproduced below.
+Copyright 2008-2026 Mark Heath
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+Microsoft .NET / System.Security.Cryptography.ProtectedData / System.Speech
+Copyright (c) .NET Foundation and Contributors. Licensed under MIT.
+The portable ZIP includes DOTNET-LICENSE.txt and DOTNET-NOTICES.txt.
+
+VB-CABLE by VB-Audio — donationware
+The embedded VBCABLE_Driver_Pack45.zip is the unmodified official basic
+VB-CABLE package. It is a separate third-party driver. The original readme
+and all vendor files remain in the embedded archive.
+Product / donations: https://vb-audio.com/Cable/
+Licensing and redistribution: https://vb-audio.com/Services/licensing.htm
+License / donation webshop: https://shop.vb-audio.com/
+Package SHA-256:
+B950E39F01AF1D04EA623C8F6D8EB9B6EA5C477C637295FABF20631C85116BFB
+Vendor installer Authenticode was verified Valid before embedding.
+
+Fish Audio, Lazybird, Streamlabs, and SpeechGen are external online services, not bundled engines.
+No voice model or voice license is redistributed by VRCTTS.
+VRCTTS is independent of Fish Audio, Lazybird, Streamlabs, SpeechGen, VRChat, and VB-Audio.
+
+.NET LICENSE
+The MIT License (MIT)
+
+Copyright (c) .NET Foundation and Contributors
+
+All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+

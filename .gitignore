@@ -1,0 +1,31 @@
+# Build output and release staging
+**/bin/
+**/obj/
+/artifacts/
+/publish-*/
+/package-*/
+/binary-backups/
+/legacy-deliverables-*/
+/layout-*.png
+
+# Local IDE state
+.vs/
+.idea/
+*.user
+*.suo
+
+# Never commit account settings, credentials, speech, or private voice installers
+settings.json
+quick-phrases.json
+SetupResults/
+.env
+.env.*
+!.env.example
+*.pfx
+*.pem
+*.key
+*.mp3
+*.wav
+*.exe
+*.zip
+!VRCTTS/Resources/VBCABLE_Driver_Pack45.zip

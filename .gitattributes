@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.zip binary
+*.png binary
+# Preserve the upstream runtime notices as supplied.
+DOTNET-LICENSE.txt -text -whitespace
+DOTNET-NOTICES.txt -text -whitespace
+THIRD-PARTY-NOTICES.txt whitespace=-blank-at-eof

@@ -1,0 +1,68 @@
+name: Publish release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag, such as v2.3.0
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: ga
+      - name: Verify tag matches the project version
+        run: |
+          [xml]$project = Get-Content ./VRCTTS/VRCTTS.csproj -Raw
+          $version = [string]($project.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1)
+          if ($env:RELEASE_TAG -cne "v$version") { throw 'Release tag must exactly match the project version.' }
+          "RELEASE_VERSION=$version" >> $env:GITHUB_ENV
+      - name: Build and run isolated checks
+        run: ./scripts/test.ps1
+      - name: Package this version
+        run: ./package.ps1 -ExpectedVersion $env:RELEASE_VERSION
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: VRCTTS-${{ env.RELEASE_VERSION }}-packages
+          path: |
+            artifacts/release/*.zip
+            artifacts/release/SHA256SUMS.txt
+          if-no-files-found: error
+          compression-level: 0
+      - name: Create GitHub release after all checks pass
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $assets = @(Get-ChildItem ./artifacts/release -File | Where-Object { $_.Extension -eq '.zip' -or $_.Name -eq 'SHA256SUMS.txt' } | ForEach-Object { $_.FullName })
+          if ($assets.Count -ne 4) { throw 'Expected three release ZIPs and one checksum file.' }
+          $arguments = @('release', 'create', $env:RELEASE_TAG, '--repo', $env:GITHUB_REPOSITORY, '--verify-tag', '--title', "VRCTTS $env:RELEASE_VERSION", '--notes-file', 'RELEASE_NOTES.md', '--generate-notes')
+          if ($env:RELEASE_VERSION.Contains('-')) { $arguments += '--prerelease' }
+          & gh @arguments @assets
+          if ($LASTEXITCODE -ne 0) { throw 'GitHub release creation failed. Existing release assets are never overwritten automatically.' }

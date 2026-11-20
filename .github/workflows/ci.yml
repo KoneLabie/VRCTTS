@@ -1,0 +1,39 @@
+name: Build and check
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: ga
+      - name: Build and run isolated checks
+        run: ./scripts/test.ps1
+      - name: Package Windows releases
+        run: ./package.ps1
+      - name: Upload release packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: VRCTTS-windows-x64
+          path: |
+            artifacts/release/*.zip
+            artifacts/release/SHA256SUMS.txt
+          if-no-files-found: error
+          compression-level: 0
