@@ -2,7 +2,9 @@ name: Publish release
 
 on:
   push:
+    branches: [main]
     tags: ['v*']
+    paths: ['.github/workflows/release.yml']
   workflow_dispatch:
     inputs:
       tag:
@@ -14,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  group: release-${{ github.repository }}
   cancel-in-progress: false
 
 jobs:
@@ -27,11 +29,24 @@ jobs:
       run:
         shell: pwsh
     env:
-      RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+      REQUESTED_RELEASE_TAG: ${{ github.event.inputs.tag || (github.ref_type == 'tag' && github.ref_name) || '' }}
     steps:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.inputs.tag || github.ref }}
+          persist-credentials: false
+      - name: Resolve the existing version tag
+        run: |
+          [xml]$project = Get-Content ./VRCTTS/VRCTTS.csproj -Raw
+          $version = [string]($project.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1)
+          if ($version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') { throw 'The project must declare a release version.' }
+          $tag = if ($env:REQUESTED_RELEASE_TAG) { $env:REQUESTED_RELEASE_TAG } else { "v$version" }
+          if ($tag -cne "v$version") { throw 'Release tag must exactly match the project version.' }
+          "RELEASE_TAG=$tag" >> $env:GITHUB_ENV
+      - name: Check out the immutable release tag
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.RELEASE_TAG }}
           persist-credentials: false
       - uses: actions/setup-dotnet@v6
         with:
@@ -62,6 +77,13 @@ jobs:
         run: |
           $assets = @(Get-ChildItem ./artifacts/release -File | Where-Object { $_.Extension -eq '.zip' -or $_.Name -eq 'SHA256SUMS.txt' } | ForEach-Object { $_.FullName })
           if ($assets.Count -ne 4) { throw 'Expected three release ZIPs and one checksum file.' }
+          $existingAssets = @(& gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --json assets --jq '.assets[].name' 2>$null)
+          if ($LASTEXITCODE -eq 0) {
+            $missing = @($assets | ForEach-Object { Split-Path -Leaf $_ } | Where-Object { $_ -notin $existingAssets })
+            if ($missing.Count -gt 0) { throw 'An incomplete release already exists. Review its assets manually; nothing was overwritten.' }
+            Write-Host 'The release already contains all expected assets; nothing was changed.'
+            exit 0
+          }
           $arguments = @('release', 'create', $env:RELEASE_TAG, '--repo', $env:GITHUB_REPOSITORY, '--verify-tag', '--title', "VRCTTS $env:RELEASE_VERSION", '--notes-file', 'RELEASE_NOTES.md', '--generate-notes')
           if ($env:RELEASE_VERSION.Contains('-')) { $arguments += '--prerelease' }
           & gh @arguments @assets
