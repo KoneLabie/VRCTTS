@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing version tag, such as v2.3.0
+        description: Existing version tag, such as v2.4.0
         required: true
         type: string
 
@@ -60,13 +60,16 @@ jobs:
           "RELEASE_VERSION=$version" >> $env:GITHUB_ENV
       - name: Build and run isolated checks
         run: ./scripts/test.ps1
-      - name: Package this version
+      - name: Build installer and package this version
         run: ./package.ps1 -ExpectedVersion $env:RELEASE_VERSION
+      - name: Check installer installation and removal
+        run: ./scripts/test-installer.ps1 -InstallerPath "./artifacts/release/VRCTTS-$env:RELEASE_VERSION-Setup.exe"
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v7
         with:
           name: VRCTTS-${{ env.RELEASE_VERSION }}-packages
           path: |
+            artifacts/release/*-Setup.exe
             artifacts/release/*.zip
             artifacts/release/SHA256SUMS.txt
           if-no-files-found: error
@@ -75,8 +78,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $assets = @(Get-ChildItem ./artifacts/release -File | Where-Object { $_.Extension -eq '.zip' -or $_.Name -eq 'SHA256SUMS.txt' } | ForEach-Object { $_.FullName })
-          if ($assets.Count -ne 4) { throw 'Expected three release ZIPs and one checksum file.' }
+          $assetNames = @("VRCTTS-$env:RELEASE_VERSION-Setup.exe", "VRCTTS-$env:RELEASE_VERSION-win-x64.zip", "VRCTTS-$env:RELEASE_VERSION-compact-win-x64.zip", "VRCTTS-$env:RELEASE_VERSION-Source.zip", 'SHA256SUMS.txt')
+          $assets = @($assetNames | ForEach-Object { Join-Path ./artifacts/release $_ })
+          foreach ($asset in $assets) {
+            if (-not (Test-Path -LiteralPath $asset -PathType Leaf)) { throw "Missing release asset: $asset" }
+          }
           $existingAssets = @(& gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --json assets --jq '.assets[].name' 2>$null)
           if ($LASTEXITCODE -eq 0) {
             $missing = @($assets | ForEach-Object { Split-Path -Leaf $_ } | Where-Object { $_ -notin $existingAssets })

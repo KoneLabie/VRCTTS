@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>VRCTTS</AssemblyName>
-    <Version>2.3.0</Version>
+    <Version>2.4.0</Version>
     <Product>VRCTTS</Product>
     <Title>VRCTTS</Title>
     <ApplicationManifest>app.manifest</ApplicationManifest>

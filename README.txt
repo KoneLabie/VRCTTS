@@ -1,12 +1,14 @@
-VRCTTS 2.3.0 — WINDOWS x64
+VRCTTS 2.4.0 — WINDOWS x64
 
 Type a message, hear your selected voice in your headphones, and send the same speech to
 VRChat through a virtual microphone. Optional OSC displays the text in the
 VRChat chatbox. Voicemeeter is not required.
 
 SETUP — SIX STEPS
-1. Run VRCTTS.exe. The compact build needs .NET 10 Desktop Runtime;
-   the Portable build includes the runtime for other Windows x64 PCs.
+1. Run VRCTTS-2.4.0-Setup.exe, then open VRCTTS from the Start menu.
+   The per-user installer includes the .NET 10 runtime and offers an optional
+   desktop shortcut. For portable use, extract the ZIP and run VRCTTS.exe.
+   Only the compact ZIP needs a separate .NET 10 Desktop Runtime installation.
 2. An existing healthy app microphone is renamed to VRCTTS automatically.
    For a new installation, approve the Windows administrator prompt to create the
    microphone. The app uses its own elevated helper and Windows SetupAPI
@@ -29,6 +31,16 @@ SETUP — SIX STEPS
    the main window. Audio, Quick TTS, Settings, and ? contain the other controls.
    You can type the next message while speech plays. Text clears after
    successful speech only when the message has not changed.
+
+INSTALLATION AND UNINSTALL
+The installer installs the app in %LOCALAPPDATA%\Programs\VRCTTS for the
+current Windows user. Installing the app does not need administrator
+approval; its first microphone setup may request administrator approval.
+The installer and app are unsigned; the included vendor driver is signed.
+Uninstall VRCTTS through Windows Installed apps. This removes the installed
+program and shortcuts while retaining %LOCALAPPDATA%\VRCTTS preferences,
+saved phrases, and API keys. The shared VB-CABLE driver remains installed.
+SHA256SUMS.txt contains checksums for the installer and all three ZIPs.
 
 VOICE SELECTION
 Settings > TTS voice selects the voice. Hatsune Miku from the linked Fish
@@ -187,9 +199,16 @@ SOURCE / BUILD
 Source is in the accompanying source ZIP. Requires .NET 10 SDK on Windows.
 Run build.ps1 for a compact build, or build.ps1 -Portable to include the
 .NET Desktop runtime. Run scripts\test.ps1 for all eight isolated check
-projects, then package.ps1 for versioned portable/compact/source ZIPs and
-SHA256SUMS.txt. Build and packaging output goes to artifacts/. Scripts accept
+projects, then package.ps1 for the installer, versioned portable/compact/source
+ZIPs, and SHA256SUMS.txt. Installer packaging automatically downloads the
+official portable Inno Setup 7.1.1 compiler, verifies its pinned SHA-256
+checksum and publisher signature, and caches it under artifacts/tools/.
+No preinstalled Inno Setup is required; the first packaging run needs internet.
+Build and packaging output goes to artifacts/. Scripts accept
 -DotnetPath C:\path\to\dotnet.exe for a separately installed SDK.
+package.ps1 and build-installer.ps1 also accept
+-IsccPath C:\path\to\ISCC.exe to use a compiler you supply.
+CI checks isolated installer installation and removal before uploading packages.
 Tests:
   dotnet run --project VRCTTS.Tests
   dotnet run --project VoiceTests

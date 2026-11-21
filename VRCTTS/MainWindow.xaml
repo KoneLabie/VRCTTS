@@ -96,7 +96,7 @@
                 <WrapPanel VerticalAlignment="Center"><TextBlock Text="OSC port" VerticalAlignment="Center" FontSize="12" Margin="0,0,8,0"/><TextBox x:Name="OscPort" Text="9000" Width="78" AutomationProperties.Name="VRChat OSC port"/><Button Content="Send text only" Click="OnSendTextOnly" Margin="10,0,0,0"/></WrapPanel>
               </StackPanel>
             </Expander>
-            <TextBlock Text="Quick TTS phrases are saved on this PC. Drafts and speech history are not saved. Close the app to stop all speech. Version 2.3.0 · Windows x64" FontSize="10" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,16,0,0"/>
+            <TextBlock Text="Quick TTS phrases are saved on this PC. Drafts and speech history are not saved. Close the app to stop all speech. Version 2.4.0 · Windows x64" FontSize="10" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,16,0,0"/>
           </StackPanel>
         </ScrollViewer>
       </Border>

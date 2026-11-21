@@ -5,6 +5,9 @@ namespace VRCTTS;
 
 public partial class App : Application
 {
+    public const string InstallerMutexName = @"Local\VRCTTS.Running";
+    private Mutex? runningMutex;
+
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -23,7 +26,16 @@ public partial class App : Application
             args.Handled = true;
         };
         ShutdownMode = ShutdownMode.OnMainWindowClose;
+        // Let setup/uninstall ask the user to close running instances instead of
+        // replacing an executable or discarding an unsent draft automatically.
+        runningMutex = new Mutex(initiallyOwned: false, InstallerMutexName);
         MainWindow = new MainWindow();
         MainWindow.Show();
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        runningMutex?.Dispose();
+        base.OnExit(e);
     }
 }

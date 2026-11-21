@@ -26,13 +26,19 @@ jobs:
           dotnet-quality: ga
       - name: Build and run isolated checks
         run: ./scripts/test.ps1
-      - name: Package Windows releases
+      - name: Build installer and Windows release packages
         run: ./package.ps1
+      - name: Check installer installation and removal
+        run: |
+          [xml]$project = Get-Content ./VRCTTS/VRCTTS.csproj -Raw
+          $version = [string]($project.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1)
+          ./scripts/test-installer.ps1 -InstallerPath "./artifacts/release/VRCTTS-$version-Setup.exe"
       - name: Upload release packages
         uses: actions/upload-artifact@v7
         with:
           name: VRCTTS-windows-x64
           path: |
+            artifacts/release/*-Setup.exe
             artifacts/release/*.zip
             artifacts/release/SHA256SUMS.txt
           if-no-files-found: error

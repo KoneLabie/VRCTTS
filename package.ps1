@@ -2,7 +2,8 @@
 param(
     [string]$DotnetPath = 'dotnet',
     [string]$OutputDirectory,
-    [string]$ExpectedVersion
+    [string]$ExpectedVersion,
+    [string]$IsccPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -53,6 +54,9 @@ foreach ($supportFile in $supportFiles) {
     }
 }
 
+$setupName = "VRCTTS-$version-Setup.exe"
+& (Join-Path $repositoryRoot 'build-installer.ps1') -AppSourceDirectory $portableStage -OutputDirectory $OutputDirectory -Version $version -IsccPath $IsccPath
+
 # Explicit source allowlist: never traverse local settings, old packages, backups,
 # generated audio, private voice installers, or repository credentials.
 $projectDirectories = @('VRCTTS','VRCTTS.Tests','VoiceTests','LayoutCheck','QuickPhraseTests','QuickPhraseCacheTests','AudioFormatTests','OfflineVoiceTests','SettingsTests','CableProbe','RenameProbe')
@@ -69,15 +73,15 @@ foreach ($projectDirectory in $projectDirectories) {
         Copy-Item -LiteralPath $sourceFile.FullName -Destination $destination
     }
 }
-foreach ($buildFile in @('build.ps1','package.ps1','global.json','.gitignore','.gitattributes','RELEASE_NOTES.md')) {
+foreach ($buildFile in @('build.ps1','build-installer.ps1','package.ps1','global.json','.gitignore','.gitattributes','RELEASE_NOTES.md')) {
     $buildPath = Join-Path $repositoryRoot $buildFile
     if (-not (Test-Path -LiteralPath $buildPath -PathType Leaf)) { throw "Missing build file: $buildFile" }
     Copy-Item -LiteralPath $buildPath -Destination $sourceStage
 }
-foreach ($relativeDirectory in @('scripts','.github\workflows')) {
+foreach ($relativeDirectory in @('scripts','.github\workflows','installer')) {
     $directoryPath = Join-Path $repositoryRoot $relativeDirectory
     foreach ($sourceFile in Get-ChildItem -LiteralPath $directoryPath -File) {
-        if ($sourceFile.Extension -notin @('.ps1','.yml','.yaml')) { continue }
+        if ($sourceFile.Extension -notin @('.ps1','.yml','.yaml','.iss','.txt')) { continue }
         $relative = $sourceFile.FullName.Substring($repositoryRoot.Length + 1)
         $destination = Join-Path $sourceStage $relative
         New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
@@ -107,10 +111,11 @@ foreach ($release in $releaseArchives) {
         $archive.Dispose()
     }
 }
-$checksums = foreach ($release in $releaseArchives) {
-    $hash = (Get-FileHash -LiteralPath (Join-Path $OutputDirectory $release.Name) -Algorithm SHA256).Hash.ToLowerInvariant()
-    "$hash  $($release.Name)"
+$packageNames = @($releaseArchives.Name) + @($setupName)
+$checksums = foreach ($packageName in $packageNames) {
+    $hash = (Get-FileHash -LiteralPath (Join-Path $OutputDirectory $packageName) -Algorithm SHA256).Hash.ToLowerInvariant()
+    "$hash  $packageName"
 }
 [IO.File]::WriteAllLines((Join-Path $OutputDirectory 'SHA256SUMS.txt'), $checksums, [Text.UTF8Encoding]::new($false))
 Write-Host "Packaged VRCTTS $version in $OutputDirectory"
-Get-ChildItem -LiteralPath $OutputDirectory -File | Where-Object { $_.Name -in @($releaseArchives.Name) + @('SHA256SUMS.txt') } | Select-Object Name,Length
+Get-ChildItem -LiteralPath $OutputDirectory -File | Where-Object { $_.Name -in $packageNames + @('SHA256SUMS.txt') } | Select-Object Name,Length

@@ -8,17 +8,20 @@ Open this repository's **Releases** tab and choose:
 
 | Package | Use |
 | --- | --- |
-| `VRCTTS-2.3.0-win-x64.zip` | Portable app with the .NET 10 runtime included. Recommended. |
-| `VRCTTS-2.3.0-compact-win-x64.zip` | Smaller app; requires the **.NET 10 Desktop Runtime, x64**. |
-| `VRCTTS-2.3.0-Source.zip` | Curated source, build scripts, tests, and third-party notices. |
+| `VRCTTS-2.4.0-Setup.exe` | Recommended installer. Installs for your Windows user and includes the .NET 10 runtime. |
+| `VRCTTS-2.4.0-win-x64.zip` | Portable app with the .NET 10 runtime included. |
+| `VRCTTS-2.4.0-compact-win-x64.zip` | Smaller app; requires the **.NET 10 Desktop Runtime, x64**. |
+| `VRCTTS-2.4.0-Source.zip` | Curated source, installer/build scripts, tests, and third-party notices. |
 
-Extract the ZIP before running `VRCTTS.exe`. Close earlier VRCTTS versions before configuring new voices or keys. SHA-256 checksums are provided in `SHA256SUMS.txt`; on Windows, use `Get-FileHash .\package-name.zip -Algorithm SHA256` to compare the downloaded ZIP.
+Run the installer, then open **VRCTTS** from the Start menu. The installer uses `%LOCALAPPDATA%\Programs\VRCTTS` and offers an optional desktop shortcut. No separate .NET installation is needed. For a portable package, extract the ZIP before running `VRCTTS.exe`. Close earlier VRCTTS versions before configuring new voices or keys. SHA-256 checksums for the installer and ZIPs are provided in `SHA256SUMS.txt`; use `Get-FileHash .\downloaded-file -Algorithm SHA256` to compare a download.
 
-The application EXE is unsigned. The included original VB-CABLE driver is signed by its vendor. A new microphone installation requires administrator approval and may require a restart.
+The installer and application EXE are unsigned. The included original VB-CABLE driver is signed by its vendor. Installing the app for your own user does not require administrator approval; creating a new microphone when the app starts does, and may require a restart.
+
+Uninstall **VRCTTS** through Windows **Installed apps**. Uninstalling removes the installed program and its shortcuts, while preserving saved phrases, settings, and API keys under `%LOCALAPPDATA%\VRCTTS`. The shared VB-CABLE microphone driver remains installed.
 
 ## First setup
 
-1. Run `VRCTTS.exe`. Approve the administrator prompt if the microphone needs installing.
+1. Open **VRCTTS** from the Start menu after installation, or run the extracted portable `VRCTTS.exe`. Approve the administrator prompt if the microphone needs installing.
 2. Open **Audio** and choose your physical headphones. The microphone route is selected automatically.
 3. In VRChat, select **VRCTTS** as your microphone. Windows may display `VRCTTS (VB-Audio Virtual Cable)`.
 4. For chatbox text, enable **Action Menu → Options → OSC → Enabled** in VRChat.
@@ -66,18 +69,18 @@ An existing healthy basic cable is reused. The driver remains installed when the
 
 ## Build, check, and package
 
-Requires Windows x64, PowerShell, and a supported **.NET 10 SDK** matching `global.json`.
+Requires Windows x64, PowerShell, and a supported **.NET 10 SDK** matching `global.json`. Installer packaging automatically downloads the official portable **Inno Setup 7.1.1** compiler, verifies its pinned SHA-256 checksum and publisher signature, and caches it under `artifacts/tools/`. No preinstalled Inno Setup is required. The first packaging run needs internet access.
 
 ```powershell
 ./scripts/test.ps1
 ./build.ps1                 # compact EXE
 ./build.ps1 -Portable       # includes the runtime
-./package.ps1              # versioned ZIPs and SHA256SUMS.txt
+./package.ps1              # installer, versioned ZIPs, and SHA256SUMS.txt
 ```
 
-Scripts accept `-DotnetPath C:\path\to\dotnet.exe` when using a separately installed SDK. Build output and fresh package staging stay under `artifacts/`, which is ignored by Git. Packaging uses an explicit source allowlist and never includes personal settings, speech files, private voice installers, or old binaries.
+Scripts accept `-DotnetPath C:\path\to\dotnet.exe` when using a separately installed SDK. `package.ps1` and `build-installer.ps1` also accept `-IsccPath C:\path\to\ISCC.exe` to use a compiler you supply. Build output and fresh package staging stay under `artifacts/`, which is ignored by Git. Packaging uses an explicit source allowlist and never includes personal settings, speech files, private voice installers, or old binaries.
 
-CI runs eight isolated console-check projects on Windows, then builds both packages. Version tags such as `v2.3.0` run the same checks before a GitHub release is created; the tag must match the version in `VRCTTS.csproj`. The release workflow can also be run manually for an existing tag. Pushing a change to the release workflow on `main` publishes the existing tag declared by the project version, which covers repositories whose initial publication did not trigger a tag event. Release builds always check out that immutable tag, and existing assets are never overwritten automatically. No workflow requires provider API keys or exercises real microphone playback, driver installation, or live speech APIs.
+CI runs eight isolated console-check projects on Windows, builds the installer and packages, then checks installation and removal in an isolated directory before uploading them. Version tags such as `v2.4.0` run the same checks before a GitHub release is created; the tag must match the version in `VRCTTS.csproj`. Each release publishes one installer, three ZIPs, and a checksum file. The release workflow can also be run manually for an existing tag. Pushing a change to the release workflow on `main` publishes the existing tag declared by the project version, which covers repositories whose initial publication did not trigger a tag event. Release builds always check out that immutable tag, and existing assets are never overwritten automatically. No workflow requires provider API keys or exercises real microphone playback, driver installation, or live speech APIs.
 
 Automated checks cover request formats, model routing, key separation, bounded downloads, cancellation, Justin fallback, audio decoding, OSC packets/local delivery, phrase persistence/cache isolation, legacy migration, saved voice selection, and WPF layout. Fish and Lazybird authenticated generation, licensed offline Justin, a clean driver installation, and in-game microphone speech still require environment-specific verification. The checks do not claim those live scenarios passed.
 
